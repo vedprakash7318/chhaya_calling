@@ -15,7 +15,7 @@ const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+const APi_URL= import.meta.env.VITE_API_URL;
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -25,14 +25,14 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/calling-team/login', form);      
+      const response = await axios.post(`${APi_URL}/api/calling-team/login`, form);      
       if (response.data?.user) {
         toast.success('Login successful!');
         const CallingTeamId=response.data.user._id;
         // Optional: Store user info (not token)
         localStorage.setItem('CallingTeamId',CallingTeamId);
         
-        setTimeout(() => navigate('/dashboard'), 2000);
+        setTimeout(() => navigate('/leads'), 2000);
       } else {
         toast.error('Invalid login response');
       }

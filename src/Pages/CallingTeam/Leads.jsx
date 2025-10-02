@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -7,12 +7,14 @@ import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import { Badge } from 'primereact/badge';
 import { InputText } from 'primereact/inputtext';
+import { SplitButton } from 'primereact/splitbutton';
 import { useMediaQuery } from 'react-responsive';
-import axios from 'axios';
-import '../CSS/Leads.css';
-import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+import '../CSS/Leads.css';
+import Notes from '../../Components/Notes';
+import ShowNotes from '../../Components/ShowNotes'
 
 function Leads() {
   const [leads, setLeads] = useState([]);
@@ -22,38 +24,58 @@ function Leads() {
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [passportNumber, setPassportNumber] = useState('');
   const [totalRecords, setTotalRecords] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenShow, setIsModalOpenShow] = useState(false);
+  const [leadId, setLeadId] = useState("");
+  const [addedById, setaddedById] = useState("");
+  const APi_URL= import.meta.env.VITE_API_URL;
+  const [notesData, setNotesData] = useState({
+    addedBy: '',
+    addedByType: '',
+    leadId: ''
+  });
+
   const [lazyParams, setLazyParams] = useState({
     first: 0,
     rows: 10,
     page: 1,
     sortField: null,
     sortOrder: null,
-    search: ''
+    search: '',
+    status: 'all'
   });
 
-  const navigate = useNavigate();
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const CallingTeamId = localStorage.getItem('CallingTeamId');
 
-  // Separate useEffect to trigger fetchLeads when lazyParams change
-  useEffect(() => {
-    fetchLeads();
-  }, [lazyParams]); // This will trigger whenever lazyParams changes
-
-  const statusOptions = [
+  const filterStatusOptions = useMemo(() => [
+    { label: 'All Statuses', value: 'all' },
     { label: 'Interested', value: 'Interested' },
     { label: 'Not Interested', value: 'Not Interested' },
     { label: 'Passport Holder', value: 'Passport Holder' },
     { label: 'Client', value: 'Client' },
     { label: 'Agent', value: 'Agent' }
-  ];
+  ], []);
 
-  const fetchLeads = () => {
+  const statusOptions = useMemo(() => [
+    { label: 'Interested', value: 'Interested' },
+    { label: 'Not Interested', value: 'Not Interested' },
+    { label: 'Passport Holder', value: 'Passport Holder' },
+    { label: 'Client', value: 'Client' },
+    { label: 'Agent', value: 'Agent' }
+  ], []);
+
+  const fetchLeads = useCallback(() => {
     setLoading(true);
-    const { page, rows: limit, search } = lazyParams;
+    const { page, rows: limit, search, status } = lazyParams;
 
-    axios.get(`http://localhost:5000/api/contact/get-assigned-leads/${CallingTeamId}`, {
-      params: { page, limit, search }
+    axios.get(`${APi_URL}/api/contact/get-assigned-leads/${CallingTeamId}`, {
+      params: {
+        page,
+        limit,
+        search,
+        status: status === 'all' ? '' : status
+      }
     })
       .then((res) => {
         setLeads(res.data.leads || []);
@@ -66,60 +88,45 @@ function Leads() {
         setTotalRecords(0);
         setLoading(false);
       });
-  };
+  }, [lazyParams, CallingTeamId]);
 
   const onPage = (event) => {
-    setLazyParams({
-      ...lazyParams,
+    setLazyParams(prev => ({
+      ...prev,
       first: event.first,
       rows: event.rows,
       page: event.page + 1
-    });
+    }));
   };
 
-  // Enhanced search function with debouncing
   const onSearch = (e) => {
     const value = e.target.value;
-    setLazyParams({
-      ...lazyParams,
+    setLazyParams(prev => ({
+      ...prev,
       search: value,
       first: 0,
       page: 1
-    });
+    }));
   };
 
-  // Alternative: Add debounced search for better performance
-  const [searchTimeout, setSearchTimeout] = useState(null);
-
-  const onSearchDebounced = (e) => {
-    const value = e.target.value;
-
-    // Clear previous timeout
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
-    }
-
-    // Set new timeout
-    const newTimeout = setTimeout(() => {
-      setLazyParams({
-        ...lazyParams,
-        search: value,
-        first: 0,
-        page: 1
-      });
-    }, 500); // 500ms delay
-
-    setSearchTimeout(newTimeout);
+  const onStatusFilter = (e) => {
+    setLazyParams(prev => ({
+      ...prev,
+      status: e.value,
+      first: 0,
+      page: 1
+    }));
   };
 
-  // Cleanup timeout on component unmount
-  useEffect(() => {
-    return () => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-    };
-  }, [searchTimeout]);
+  const clearFilters = () => {
+    setLazyParams(prev => ({
+      ...prev,
+      search: '',
+      status: 'all',
+      first: 0,
+      page: 1
+    }));
+  };
 
   const handleCall = (phone) => {
     window.open(`tel:${phone}`);
@@ -128,19 +135,51 @@ function Leads() {
   const openStatusDialog = (lead) => {
     setSelectedLead(lead);
     setSelectedStatus(lead.status || null);
-    setPassportNumber(lead.passportNumber || ''); // Load existing passport number
+    setPassportNumber(lead.passportNumber || '');
     setShowStatusDialog(true);
+  };
+
+  const handleOpenModal = (rowData) => {
+    const addedBy = localStorage.getItem("CallingTeamId");
+    const addedByType = "CallingTeam";
+    const leadId = rowData._id;
+    
+    setNotesData({
+      addedBy,
+      addedByType,
+      leadId
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenModalShow = (rowData) => {
+    const addedBy = localStorage.getItem("CallingTeamId");
+    const leadId = rowData._id;
+    setaddedById(addedBy)
+    setLeadId(leadId)
+    setIsModalOpenShow(true);
+  };
+
+  const handleCloseModalShow = () => {
+    setIsModalOpenShow(false);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setNotesData({
+      addedBy: '',
+      addedByType: '',
+      leadId: ''
+    });
   };
 
   const saveStatus = () => {
     if (!selectedStatus || !selectedLead) return;
 
-    // Prepare update data
     const updateData = {
       status: selectedStatus
     };
 
-    // Only include passport number if it's provided and status is Passport Holder
     if (selectedStatus === 'Passport Holder' && passportNumber.trim()) {
       updateData.passportNumber = passportNumber.trim();
     } else if (selectedStatus === 'Passport Holder' && !passportNumber.trim()) {
@@ -148,11 +187,11 @@ function Leads() {
       return;
     }
 
-    axios.put(`http://localhost:5000/api/contact/update-lead-status/${selectedLead._id}`, updateData)
+    axios.put(`${APi_URL}/api/contact/update-lead-status/${selectedLead._id}`, updateData)
       .then(() => {
         fetchLeads();
         setShowStatusDialog(false);
-        setPassportNumber(''); // Clear passport number
+        setPassportNumber('');
         toast.success('Status updated successfully');
       })
       .catch((err) => {
@@ -161,7 +200,7 @@ function Leads() {
       });
   };
 
-  const getStatusSeverity = (status) => {
+  const getStatusSeverity = useCallback((status) => {
     switch (status) {
       case 'Interested': return 'success';
       case 'Not Interested': return 'danger';
@@ -170,9 +209,9 @@ function Leads() {
       case 'Agent': return 'warning';
       default: return 'secondary';
     }
-  };
+  }, []);
 
-  const statusTemplate = (rowData) => {
+  const statusTemplate = useCallback((rowData) => {
     return (
       <Badge
         value={rowData.status || 'NA'}
@@ -180,31 +219,47 @@ function Leads() {
         className="leads-status-badge"
       />
     );
-  };
+  }, [getStatusSeverity]);
 
-  const actionTemplate = (rowData) => (
+  const actionTemplate = useCallback((rowData) => (
     <div className="leads-action-buttons">
       <Button
-        label="Call"
-        className="p-button-success p-button-sm leads-call-btn"
+        icon="pi pi-phone"
+        className="p-button-rounded p-button-success p-button-sm"
         onClick={() => handleCall(rowData.number)}
+        tooltip="Call"
+        tooltipOptions={{ position: 'top' }}
       />
       <Button
-        label="Edit Status"
-        className="p-button-warning p-button-sm leads-edit-btn"
+        icon="pi pi-pencil"
+        className="p-button-rounded p-button-warning p-button-sm"
         onClick={() => openStatusDialog(rowData)}
+        tooltip="Edit Status"
+        tooltipOptions={{ position: 'top' }}
+      />
+      <Button
+        icon="pi pi-bell"
+        className="p-button-rounded p-button-info p-button-sm"
+        onClick={() => handleOpenModal(rowData)}
+        tooltip="Set Reminder"
+        tooltipOptions={{ position: 'top' }}
+      />
+      <Button
+        icon="pi pi-eye"
+        className="p-button-rounded p-button-help p-button-sm"
+        onClick={() => handleOpenModalShow(rowData)}
+        tooltip="Show Reminders"
+        tooltipOptions={{ position: 'top' }}
       />
     </div>
-  );
+  ), []);
 
-  const phoneTemplate = (rowData) => (
-    <div className="leads-phone-cell">
-      <span>{rowData.number}</span>
-    </div>
-  );
+  const phoneTemplate = useCallback((rowData) => (
+    <span>{rowData.number}</span>
+  ), []);
 
-  const MobileCardView = ({ lead, index }) => (
-    <div className="leads-mobile-lead-card">
+  const MobileCardView = useCallback(({ lead, index }) => (
+    <div className="leads-mobile-lead-card" key={lead._id || index}>
       <div className="leads-card-header">
         <div className="leads-lead-number">#{index + 1}</div>
         <Badge
@@ -244,17 +299,63 @@ function Leads() {
       <div className="leads-card-actions">
         <Button
           icon="pi pi-phone"
-          className="p-button-rounded p-button-success p-button-sm leads-action-btn-mobile"
+          className="p-button-rounded p-button-success p-button-sm"
           onClick={() => handleCall(lead.number)}
+          tooltip="Call"
+          tooltipOptions={{ position: 'top' }}
         />
         <Button
           icon="pi pi-pencil"
-          className="p-button-rounded p-button-warning p-button-sm leads-action-btn-mobile"
+          className="p-button-rounded p-button-warning p-button-sm"
           onClick={() => openStatusDialog(lead)}
+          tooltip="Edit Status"
+          tooltipOptions={{ position: 'top' }}
+        />
+        <Button
+          icon="pi pi-bell"
+          className="p-button-rounded p-button-info p-button-sm"
+          onClick={() => handleOpenModal(lead)}
+          tooltip="Set Reminder"
+          tooltipOptions={{ position: 'top' }}
+        />
+        <Button
+          icon="pi pi-eye"
+          className="p-button-rounded p-button-help p-button-sm"
+          onClick={() => handleOpenModalShow(lead)}
+          tooltip="Show Reminders"
+          tooltipOptions={{ position: 'top' }}
         />
       </div>
     </div>
-  );
+  ), [getStatusSeverity]);
+
+  const filterItems = [
+    ...filterStatusOptions.map(option => ({
+      label: option.label,
+      command: () => onStatusFilter({ value: option.value })
+    })),
+    {
+      separator: true
+    },
+    {
+      label: 'Clear Filters',
+      icon: 'pi pi-filter-slash',
+      command: clearFilters
+    }
+  ];
+
+  const getCurrentFilterLabel = () => {
+    const currentFilter = filterStatusOptions.find(opt => opt.value === lazyParams.status);
+    return currentFilter ? currentFilter.label : 'Filter by Status';
+  };
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchLeads();
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [fetchLeads]);
 
   return (
     <div className="leads-container">
@@ -263,14 +364,40 @@ function Leads() {
       <div className="leads-header">
         <h2>Assigned Leads</h2>
         <div className="leads-header-actions">
-          {!isMobile && (
-            <span className="p-input-icon-left">
-              <InputText
-                value={lazyParams.search}
-                onChange={onSearchDebounced} // Use debounced version for better performance
-                placeholder="Search leads..."
+          {!isMobile ? (
+            <>
+              <span className="p-input-icon-left">
+                
+                <InputText
+                  value={lazyParams.search}
+                  onChange={onSearch}
+                  placeholder="Search leads..."
+                />
+              </span>
+              <SplitButton
+                label={getCurrentFilterLabel()}
+                model={filterItems}
+                className="p-button-outlined leads-filter-btn"
+                icon="pi pi-filter"
               />
-            </span>
+              {(lazyParams.search || lazyParams.status !== 'all') && (
+                <Button
+                  icon="pi pi-times"
+                  className="p-button-text p-button-plain leads-clear-filters"
+                  onClick={clearFilters}
+                  tooltip="Clear all filters"
+                  tooltipOptions={{ position: 'top' }}
+                />
+              )}
+            </>
+          ) : (
+            <Dropdown
+              value={lazyParams.status}
+              options={filterStatusOptions}
+              onChange={onStatusFilter}
+              placeholder="Filter by status"
+              className="leads-mobile-filter"
+            />
           )}
         </div>
       </div>
@@ -283,10 +410,10 @@ function Leads() {
         <div className="leads-mobile-leads-container">
           <div className="leads-mobile-search">
             <span className="p-input-icon-left">
-              <i className="pi pi-search" />
+            
               <InputText
                 value={lazyParams.search}
-                onChange={onSearchDebounced} // Use debounced version here too
+                onChange={onSearch}
                 placeholder="Search leads..."
               />
             </span>
@@ -303,7 +430,7 @@ function Leads() {
           ) : (
             <div className="leads-no-leads">
               <i className="pi pi-info-circle"></i>
-              <p>{lazyParams.search ? 'No leads match your search.' : 'No leads have been assigned yet.'}</p>
+              <p>{lazyParams.search || lazyParams.status !== 'all' ? 'No leads match your filters.' : 'No leads have been assigned yet.'}</p>
             </div>
           )}
         </div>
@@ -368,7 +495,6 @@ function Leads() {
         </div>
       )}
 
-      {/* Status Update Dialog */}
       <Dialog
         header="Update Lead Status"
         visible={showStatusDialog}
@@ -445,7 +571,22 @@ function Leads() {
         </div>
       </Dialog>
 
+      <Notes
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        addedBy={notesData.addedBy}
+        addedByType={notesData.addedByType}
+        leadId={notesData.leadId}
+      />
 
+      {isModalOpenShow && (
+        <ShowNotes
+          isOpen={isModalOpenShow}
+          onClose={handleCloseModalShow}
+          leadId={leadId}
+          addedBy={addedById}
+        />
+      )}
     </div>
   );
 }

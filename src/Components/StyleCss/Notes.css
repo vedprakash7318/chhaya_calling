@@ -1,0 +1,285 @@
+/* src/components/ReminderModal.css */
+.notes-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.notes-modal-content {
+  background: white;
+  padding: 0;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.notes-modal-title {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+}
+
+.notes-close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notes-close-btn:hover {
+  color: #333;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+}
+
+.notes-form-group {
+  padding: 20px 30px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notes-form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+  font-size: 14px;
+}
+
+.notes-textarea,
+.notes-datetime-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.notes-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.notes-textarea:focus,
+.notes-datetime-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.notes-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px 30px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notes-cancel-btn {
+  padding: 10px 20px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.notes-save-btn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.notes-cancel-btn:hover {
+  background-color: #5a6268;
+}
+
+.notes-save-btn:hover {
+  background-color: #0056b3;
+}
+
+.notes-cancel-btn:active,
+.notes-save-btn:active {
+  transform: translateY(1px);
+}
+
+/* Reminders Section */
+.notes-reminders-section {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.notes-reminders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.notes-reminders-title {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.notes-clear-all-btn {
+  padding: 5px 10px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.notes-clear-all-btn:hover {
+  background-color: #c82333;
+}
+
+.notes-reminders-list {
+  padding: 15px 30px;
+}
+
+.notes-reminder-item {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  border-left: 4px solid #007bff;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.notes-reminder-content {
+  flex: 1;
+}
+
+.notes-reminder-message {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.notes-reminder-datetime {
+  color: #dc3545;
+  font-size: 12px;
+  margin-bottom: 3px;
+  font-weight: bold;
+}
+
+.notes-reminder-created {
+  color: #6c757d;
+  font-size: 11px;
+}
+
+.notes-delete-reminder-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.notes-delete-reminder-btn:hover {
+  background-color: #c82333;
+}
+
+/* src/pages/Leads.css */
+.notes-leads-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.notes-leads-title {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 32px;
+  text-align: center;
+}
+
+.notes-leads-content {
+  background: #f8f9fa;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.notes-leads-description {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.notes-open-modal-btn {
+  padding: 12px 24px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.notes-open-modal-btn:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notes-open-modal-btn:active {
+  transform: translateY(0);
+}

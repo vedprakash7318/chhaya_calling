@@ -6,7 +6,7 @@ import axios from "axios";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const PaymentBook = () => {
+const PaymentBook = () => {  
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentType, setPaymentType] = useState("");
   const [paymentMode, setPaymentMode] = useState("");
@@ -20,7 +20,7 @@ const PaymentBook = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  
+const APi_URL= import.meta.env.VITE_API_URL;  
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
@@ -28,12 +28,12 @@ const PaymentBook = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch client details
-  useEffect(() => {
+  useEffect(() => {    
     const fetchUserData = async () => {
-      if (phone && phone._id) {
+      if (phone) {
         try {
           setIsLoading(true);
-          const res = await axios.get(`http://localhost:5000/api/client-form/getbyleadId/${phone._id}`);
+          const res = await axios.get(`${APi_URL}/api/client-form/getbyleadId/${phone}`);
           setUsers(res.data);
           setTotalServiceCharge(Number(res?.data?.officeConfirmation?.ServiceCharge) || 0);
           setTotalMedicalCharge(Number(res?.data?.officeConfirmation?.MedicalCharge) || 0);
@@ -54,7 +54,7 @@ const PaymentBook = () => {
   // Fetch payments for this lead
   const fetchPayments = useCallback(async (leadId) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/payment/payment/${leadId}`);
+      const res = await axios.get(`${APi_URL}/api/payment/payment/${leadId}`);
       setPayments(res.data);
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -159,7 +159,7 @@ const PaymentBook = () => {
         addedBy: localStorage.getItem("CallingTeamId")
       };
 
-      await axios.post("http://localhost:5000/api/payment/payment", payload);
+      await axios.post(`${APi_URL}/api/payment/payment`, payload);
 
       toast.success(`Payment of ₹${amount} for ${paymentType} via ${paymentMode} processed successfully!`);
       setIsPaymentModalOpen(false);
@@ -172,7 +172,7 @@ const PaymentBook = () => {
       
       // Also refresh user data in case charges were updated
       if (phone && phone._id) {
-        const res = await axios.get(`http://localhost:5000/api/client-form/getbyleadId/${phone._id}`);
+        const res = await axios.get(`${APi_URL}/api/client-form/getbyleadId/${phone._id}`);
         setUsers(res.data);
         setTotalServiceCharge(Number(res?.data?.officeConfirmation?.ServiceCharge) || 0);
         setTotalMedicalCharge(Number(res?.data?.officeConfirmation?.MedicalCharge) || 0);

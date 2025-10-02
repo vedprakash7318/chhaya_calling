@@ -9,54 +9,62 @@ import Mainpage from './Pages/CallingTeam/Mainpage';
 import PassportHolder from './Pages/CallingTeam/PassportHolder';
 import ViewClientForm from './Pages/CallingTeam/ViewClientForm';
 import PaymentBook from './Pages/CallingTeam/PaymentBook';
+import FilledForm from './Pages/CallingTeam/FilledForm';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 function App() {
 
   return (
     <>
       <Router>
-         <Routes>
-        <Route path='/' element={<Login/>}/>
-
-
-
-
+        <Routes>
+          <Route path='/' element={<Login />} />
           <Route path="/Leads" element={
-          <Dashboard>
-            <Leads />
-          </Dashboard>
-        } />
+            <Dashboard>
+              <Leads />
+            </Dashboard>
+          } />
+          
           <Route path="/passport-holder" element={
-          <Dashboard>
-            <PassportHolder />
-          </Dashboard>
-        } />
+            <Dashboard>
+              <PassportHolder />
+            </Dashboard>
+          } />
+
+          <Route path="/filled-form" element={
+            <Dashboard>
+              <FilledForm />
+            </Dashboard>
+          } />
 
           <Route path="/dashboard" element={
-          <Dashboard>
-            <Mainpage />
-          </Dashboard>
-        } />
+            <Dashboard>
+              <Mainpage />
+            </Dashboard>
+          } />
 
           <Route path="/form" element={
-          <Dashboard>
-            <ClientForm />
-          </Dashboard>
-        } />
+            <Dashboard>
+              <ClientForm />
+            </Dashboard>
+          } />
 
           <Route path="/view-form" element={
-          <Dashboard>
-            <ViewClientForm />
-          </Dashboard>
-        } />
+            <Dashboard>
+              <ViewClientForm />
+            </Dashboard>
+          } />
 
           <Route path="/payment-book" element={
-          <Dashboard>
-            <PaymentBook />
-          </Dashboard>
-        } />
+            <Dashboard>
+              <PaymentBook />
+            </Dashboard>
+          } />
 
-         </Routes>
-    </Router>
+        </Routes>
+      </Router>
+
+       <ToastContainer position="top-right" autoClose={3000} />
     </>
   )
 }

@@ -4,7 +4,7 @@ import '../CSS/ViewClientForm.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import ApplyInterviewModal from '../../Components/ApplyInterviewModal';
 const ViewClientForm = () => {
   const [data, setData] = useState(null);
   const [editData, setEditData] = useState({});
@@ -13,43 +13,27 @@ const ViewClientForm = () => {
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [interviewManagers, setInterviewManagers] = useState([]);
-  const [selectedManager, setSelectedManager] = useState("");
-  const [search, setSearch] = useState("");
-  const [applying, setApplying] = useState(false); // New state for interview application loading
-  const [printing, setPrinting] = useState(false); // New state for print button loading
+  const [printing, setPrinting] = useState(false);
 
   const { state } = useLocation();
   const navigate = useNavigate();
   const location = useLocation();
-  const leadId = location.state?.leadId;
-  const callingTeamId = localStorage.getItem("CallingTeamId");
-  const medicalOptions = ['Fit', 'Unfit', 'Pending'];
+  const leadId = location.state?.lId;
+  const APi_URL= import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    if (isOpen) {
-      axios.get("http://localhost:5000/api/interview-manager/getAll")
-        .then((res) => setInterviewManagers(res.data))
-        .catch((err) => {
-          console.error(err);
-          toast.error('Failed to load interview managers');
-        });
+  const fetchData = async () => {
+    try {
+      const res = await axios.get(`${APi_URL}/api/client-form/getbyleadId/${leadId}`);
+      setData(res.data);
+      setEditData(res.data);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load form data');
+      toast.error('Failed to load form data');
+    } finally {
+      setLoading(false);
     }
-  }, [isOpen]);
-
- const fetchData = async () => {
-      try {
-        const res = await axios.get(`http://localhost:5000/api/client-form/getbyleadId/${leadId}`);
-        setData(res.data);
-        setEditData(res.data);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load form data');
-        toast.error('Failed to load form data');
-      } finally {
-        setLoading(false);
-      }
-    };
+  };
 
   useEffect(() => {
     if (!state) {
@@ -57,7 +41,6 @@ const ViewClientForm = () => {
       return;
     }
 
-   
     fetchData();
   }, [leadId, navigate, state]);
 
@@ -97,43 +80,18 @@ const ViewClientForm = () => {
       setPrinting(false);
     }, 500);
   };
-  
-  const handleApply = async () => {
-    if (!selectedManager) {
-      toast.error("Please select an Interview Manager!");
-      return;
-    }
 
-    setApplying(true);
-    try {
-      await axios.post("http://localhost:5000/api/client-form/apply-interview", {
-        leadId: leadId,
-        interviewManagerId: selectedManager,
-        callingTeamId: callingTeamId,
-      });
-
-      toast.success("Interview Applied Successfully!");
-      fetchData()
-      setIsOpen(false);
-    } catch (err) {
-      console.error(err);
-      toast.error("Error applying for interview");
-    } finally {
-      setApplying(false);
-    }
-  };
-  
   const handleSave = async () => {
     setSaving(true);
     setError(null);
 
     try {
-      const res = await axios.put(`http://localhost:5000/api/client-form/update/${data._id}`, editData);
+      const res = await axios.put(`${APi_URL}/api/client-form/update/${data._id}`, editData);
       setData(res.data.data);
       setEditData(res.data.data);
       setIsEditing(false);
       toast.success('Registration updated successfully!');
-      fetchData()
+      fetchData();
     } catch (err) {
       console.error('Error updating registration:', err);
       setError(err.response?.data?.message || 'Failed to update registration');
@@ -141,6 +99,10 @@ const ViewClientForm = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleInterviewSuccess = () => {
+    fetchData(); // Refresh data after successful interview application
   };
 
   if (!state) return null;
@@ -164,6 +126,14 @@ const ViewClientForm = () => {
       />
       
       <div className="form-container">
+         <div className="navigation-header">
+        <button 
+          className="back-button"
+          onClick={() => navigate('/filled-form')}
+        >
+          ← Back to Leads
+        </button>
+      </div>
         <div className="form-header">
           <div className="company-info">
             <h2>Chhaya International Pvt. Ltd.</h2>
@@ -330,26 +300,35 @@ const ViewClientForm = () => {
             </div>
 
             <div className="form-group checkbox-group">
-              <div className="checkbox-item">
-                <input
-                  type="checkbox"
-                  id="ecr"
-                  checked={isEditing ? (editData.ecr || false) : data.ecr}
-                  onChange={isEditing ? (e) => handleInputChange('ecr', e.target.checked) : undefined}
-                  readOnly={!isEditing}
-                />
-                <label htmlFor="ecr">ECR</label>
-              </div>
-              <div className="checkbox-item">
-                <input
-                  type="checkbox"
-                  id="ecnr"
-                  checked={isEditing ? (editData.ecnr || false) : data.ecnr}
-                  onChange={isEditing ? (e) => handleInputChange('ecnr', e.target.checked) : undefined}
-                  readOnly={!isEditing}
-                />
-                <label htmlFor="ecnr">ECNR</label>
-              </div>
+              <label>Passport Type:</label>
+              {isEditing ? (
+                <div className="radio-group">
+                  <div className="radio-item">
+                    <input
+                      type="radio"
+                      id="ecr"
+                      name="passportType"
+                      value="ECR"
+                      checked={editData.passportType === "ECR"}
+                      onChange={(e) => handleInputChange('passportType', e.target.value)}
+                    />
+                    <label htmlFor="ecr">ECR</label>
+                  </div>
+                  <div className="radio-item">
+                    <input
+                      type="radio"
+                      id="ecnr"
+                      name="passportType"
+                      value="ECNR"
+                      checked={editData.passportType === "ECNR"}
+                      onChange={(e) => handleInputChange('passportType', e.target.value)}
+                    />
+                    <label htmlFor="ecnr">ECNR</label>
+                  </div>
+                </div>
+              ) : (
+                <div className="form-control">{data.passportType}</div>
+              )}
             </div>
           </div>
         </section>
@@ -417,35 +396,12 @@ const ViewClientForm = () => {
 
             <div className="form-group">
               <label>Expected Salary:</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  className="form-control editable-input"
-                  value={editData.expectedSalary || ''}
-                  onChange={(e) => handleInputChange('expectedSalary', e.target.value)}
-                />
-              ) : (
                 <div className="form-control">{data.expectedSalary}</div>
-              )}
             </div>
 
             <div className="form-group">
               <label>Medical Report:</label>
-              {isEditing ? (
-                <select
-                  className="form-control editable-input"
-                  value={editData.medicalReport || ''}
-                  onChange={(e) => handleInputChange('medicalReport', e.target.value)}
-                >
-                  {medicalOptions.map(option => (
-                    <option key={option} value={option}>
-                      {option.charAt(0).toUpperCase() + option.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              ) : (
                 <div className="form-control">{data.medicalReport}</div>
-              )}
             </div>
 
             <div className="form-group">
@@ -470,33 +426,10 @@ const ViewClientForm = () => {
         </section>
 
         <section className="form-section office-use">
-          <h4 className="section-title">
-            <span className="section-bullet">•</span> For Office Use Only
-          </h4>
           <div className="form-grid">
             <div className="form-group">
-              <label>Agent Code:</label>
-              <div className="form-control">{data.agentCode}</div>
-            </div>
-
-            <div className="form-group">
-              <label>Country:</label>
-              <div className="form-control">{data.officeConfirmation?.country?.countryName}</div>
-            </div>
-
-            <div className="form-group">
-              <label>Work:</label>
-              <div className="form-control">{data.officeConfirmation?.work?.jobTitle}</div>
-            </div>
-
-            <div className="form-group">
-              <label>Salary:</label>
-              <div className="form-control">{data.officeConfirmation?.salary}</div>
-            </div>
-
-            <div className="form-group">
               <label>Service Charge:</label>
-              <div className="form-control">{data.officeConfirmation?.ServiceCharge}</div>
+              <div className="form-control">{data?.ServiceChargeByTeam}</div>
             </div>
             <div className="form-group">
               <label>Medical Charge:</label>
@@ -551,53 +484,12 @@ const ViewClientForm = () => {
         </div>
       </div>
 
-      {isOpen && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Apply for Interview</h2>
-            <input
-              type="text"
-              placeholder="Search Interview Manager..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="search-box"
-            />
-            <select
-              value={selectedManager}
-              onChange={(e) => setSelectedManager(e.target.value)}
-              className="dropdown"
-            >
-              <option value="">Select Interview Manager</option>
-              {interviewManagers
-                .filter((m) =>
-                  m.name.toLowerCase().includes(search.toLowerCase())
-                )
-                .map((m) => (
-                  <option key={m._id} value={m._id}>
-                    {m.name}
-                  </option>
-                ))}
-            </select>
-            <div className="modal-buttons">
-              <button className="cancel-btn" onClick={() => setIsOpen(false)}>
-                Cancel
-              </button>
-              <button 
-                className="apply-btn" 
-                onClick={handleApply}
-                disabled={applying}
-              >
-                {applying ? (
-                  <>
-                    <span className="button-spinner"></span>
-                    Applying...
-                  </>
-                ) : 'Apply'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ApplyInterviewModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        leadId={leadId}
+        onSuccess={handleInterviewSuccess}
+      />
     </>
   );
 };

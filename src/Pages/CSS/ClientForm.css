@@ -9,6 +9,25 @@
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
+.navigation-header {
+  margin-bottom: 20px;
+}
+
+.back-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
+}
+
 .company-header {
   display: flex;
   justify-content: space-between;
@@ -55,7 +74,8 @@ label {
 
 input[type="text"],
 input[type="email"],
-input[type="date"] {
+input[type="date"],
+input[type="number"] {
   padding: 8px;
   border: 1px solid #aaa;
   border-radius: 6px;
