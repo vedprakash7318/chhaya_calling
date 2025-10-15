@@ -1,0 +1,54 @@
+.mark-btn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.mark-btn Button{
+    font-size: 12px;
+    width: 100px;
+    height: 50px;
+}
+
+
+/* Loader overlay */
+.loader-overlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+/* Custom spinner */
+.custom-spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #007ad9; /* Primary color */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Header layout: title left, search right */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.table-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.table-header .p-input-icon-left {
+  width: 50%;
+}
+
+

@@ -17,6 +17,7 @@ export default function Sidebar({ isOpen }) {
     { icon: <FaUserFriends />, label: 'Leads', path: '/leads' },
     { icon: <FaPassport />, label: 'Passport Holder', path: '/passport-holder' },
     { icon: <FaWpforms />, label: 'Filled Form', path: '/filled-form' },
+    { icon: <FaWpforms />, label: 'Pending verify', path: '/confirmation' },
   ];
 
   const handleClick = (path) => {

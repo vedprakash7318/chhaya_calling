@@ -12,6 +12,7 @@ import PaymentBook from './Pages/CallingTeam/PaymentBook';
 import FilledForm from './Pages/CallingTeam/FilledForm';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import MarkConfirmation from './Pages/CallingTeam/MarkConfirmation';
 function App() {
 
   return (
@@ -58,6 +59,12 @@ function App() {
           <Route path="/payment-book" element={
             <Dashboard>
               <PaymentBook />
+            </Dashboard>
+          } />
+
+          <Route path="/confirmation" element={
+            <Dashboard>
+              <MarkConfirmation />
             </Dashboard>
           } />
 
